@@ -1,11 +1,11 @@
-# OpenShift - MediaWiki
-=====================
+OpenShift - MediaWiki
+========
 QuickStart MediaWiki 1.25.2 on OpenShift.
 
 As of today (12/09/2015), this is the latest version of mediawiki.
 Follow the steps below to build on OpenShift.
 
-PreInstalled Plugins. 
+PreInstalled Plugins: 
 Cite,
 CiteThisPage,
 Gadgets,
