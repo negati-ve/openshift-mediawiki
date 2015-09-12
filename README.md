@@ -6,6 +6,7 @@ As of today (12/09/2015), this is the latest version of mediawiki.
 Follow the steps below to build on OpenShift.
 
 PreInstalled Plugins: 
+
 Cite,
 CiteThisPage,
 Gadgets,
@@ -68,10 +69,15 @@ and re-push.
 Repo layout
 ===========
 php/ - Externally exposed php code goes here
+
 libs/ - Additional libraries
+
 misc/ - For not-externally exposed php code
+
 ../data - For persistent data
+
 .openshift/pear.txt - list of pears to install
+
 .openshift/action_hooks/build - Script that gets run every push, just prior to
     starting your app
 
