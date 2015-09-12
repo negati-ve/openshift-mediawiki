@@ -1,0 +1,86 @@
+#!/bin/bash
+# This deploy hook gets executed after dependencies are resolved and the
+# build hook has been run but before the application has been started back
+# up again.  This script gets executed directly, so it could be python, php,
+# ruby, etc.
+
+set -e
+
+base_version=1.25
+version=1.25.2
+
+if [ -z $OPENSHIFT_MYSQL_DB_HOST ]
+then
+    echo 1>&2
+    echo "Could not find mysql database.  Please run:" 1>&2
+    echo "rhc cartridge add -a $OPENSHIFT_APP_NAME -c mysql-5.1" 1>&2
+    echo "then make a sample commit (add whitespace somewhere) and re-push" 1>&2
+    echo 1>&2
+    exit 5
+fi
+
+# Download and extract mediawiki
+if [[ ! -d ${OPENSHIFT_DATA_DIR}/mediawiki-${version} ]]
+then
+    cd ${OPENSHIFT_DATA_DIR}
+
+    wget http://releases.wikimedia.org/mediawiki/${base_version}/mediawiki-${version}.tar.gz
+    tar xf mediawiki-${version}.tar.gz
+
+    cd - > /dev/null
+fi
+
+# Confirm database exists, if not create it
+if ! /usr/bin/mysql -u "$OPENSHIFT_MYSQL_DB_USERNAME" --password="$OPENSHIFT_MYSQL_DB_PASSWORD" -h "$OPENSHIFT_MYSQL_DB_HOST" -P "$OPENSHIFT_MYSQL_DB_PORT" -e "show tables;" openshift_mediawiki > /dev/null 2>&1
+then
+    echo
+    echo "Database not found!  Creating and importing"
+    echo
+    /usr/bin/mysqladmin -u "$OPENSHIFT_MYSQL_DB_USERNAME" --password="$OPENSHIFT_MYSQL_DB_PASSWORD" -h "$OPENSHIFT_MYSQL_DB_HOST" -P "$OPENSHIFT_MYSQL_DB_PORT" create "openshift_mediawiki" 
+    /usr/bin/mysql -u "$OPENSHIFT_MYSQL_DB_USERNAME" --password="$OPENSHIFT_MYSQL_DB_PASSWORD" -h "$OPENSHIFT_MYSQL_DB_HOST" -P "$OPENSHIFT_MYSQL_DB_PORT" openshift_mediawiki < "$OPENSHIFT_REPO_DIR/.openshift/action_hooks/openshift.sql"
+    echo
+    echo "done."
+    echo "=================================================="
+    echo "  Wiki-Admin login: admin"
+    echo "  Wiki-Admin password: admin123"
+    echo "  Don't forget to change your wiki admin password!"
+    echo "=================================================="
+else
+    echo "Database found, skipping build"
+fi
+
+if [[ ! -f ${OPENSHIFT_DATA_DIR}/mediawiki_upgrade_key ]]
+then
+    echo $(date +%s | sha256sum | base64 | head -c 16 ; echo) > ${OPENSHIFT_DATA_DIR}/mediawiki_upgrade_key
+    echo "=================================================="
+    echo "  Mediawiki Upgrade Key: $(cat $OPENSHIFT_DATA_DIR/mediawiki_upgrade_key)"
+    echo "=================================================="
+fi
+
+if [[ ! -f ${OPENSHIFT_DATA_DIR}/mediawiki_secret_key ]]
+then
+    echo $(date +%s | sha256sum | base64 | head -c 64 ; echo) > ${OPENSHIFT_DATA_DIR}/mediawiki_secret_key
+fi
+
+upgrade_key=$(cat ${OPENSHIFT_DATA_DIR}/mediawiki_upgrade_key)
+secret_key=(cat ${OPENSHIFT_DATA_DIR}/mediawiki_secret_key)
+
+if [[ ! -d ${OPENSHIFT_DATA_DIR}/images ]]
+then
+    rm -f ${OPENSHIFT_DATA_DIR}/images
+    mkdir ${OPENSHIFT_DATA_DIR}/images
+fi
+
+if [[ ! -d ${OPENSHIFT_REPO_DIR}/php ]]
+then
+    rm -f mkdir ${OPENSHIFT_REPO_DIR}/php
+    mkdir ${OPENSHIFT_REPO_DIR}/php
+fi
+
+cp -r ${OPENSHIFT_DATA_DIR}/mediawiki-${version}/* ${OPENSHIFT_REPO_DIR}/php/
+cp -r ${OPENSHIFT_REPO_DIR}/.openshift/action_hooks/LocalSettings.php ${OPENSHIFT_REPO_DIR}/php/
+
+sed -i "s/MEDIAWIKI_UPGRADE_KEY/${upgrade_key}/;s/MEDIAWIKI_SECRET_KEY/${secret_key}/" ${OPENSHIFT_REPO_DIR}/php/LocalSettings.php
+
+rm -rf ${OPENSHIFT_REPO_DIR}/images
+ln -s ${OPENSHIFT_DATA_DIR}/images ${OPENSHIFT_REPO_DIR}/images
