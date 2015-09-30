@@ -1,11 +1,12 @@
 # OpenShift - MediaWiki
-=====================
+========
 QuickStart MediaWiki 1.25.2 on OpenShift.
 
 As of today (12/09/2015), this is the latest version of mediawiki.
 Follow the steps below to build on OpenShift.
 
-PreInstalled Plugins. 
+PreInstalled Plugins: 
+
 Cite,
 CiteThisPage,
 Gadgets,
@@ -21,24 +22,43 @@ Renameuser,
 SpamBlacklist,
 SyntaxHighlight_GeSHi,
 TitleBlacklist,
-WikiEditor
+WikiEditor,
+Google Analytics.
 
 
+Whats new
+==========
+30/09/2015
+
+Plugins: 
+
+1. Scribunto (with standalone lua, enables you to do in wiki scripting and use popular features like infobox)
+2. mobile frontend ,
+3. google analytics (edit LocalSettings.php to set your google analytics account. edit line 165.)
+
+* uploads moved to data directory.
+** Uploads are now persistent. 
 Quickstart
 ==========
 
-1) Create an account at https://www.openshift.com
-2) Create a php application with mysql:
+1. Create an account at https://www.openshift.com
+2. Create a php application with mysql:
+    ```
     $ rhc app create mediawiki php-5.4 mysql-5.5
-3) Add this upstream mediawiki repo
+    ```
+3. Add this upstream mediawiki repo
+    ```
     $ cd mediawiki
     $ git remote add upstream -m master https://github.com/negati-ve/openshift-mediawiki.git
     $ git pull -s recursive -X theirs upstream master
-4) Then push the repo upstream
+    ```
+4. Then push the repo upstream
+    ```
     $ git push
-5) That's it, you can now checkout your application at:
+    ```
+5. That's it, you can now checkout your application at:
     http://mediawiki-$yourlogin.rhcloud.com
-6) Default Admin Username: admin
+6. Default Admin Username: admin
    Default Password: admin123
 
 Updates
@@ -47,21 +67,30 @@ Updates
 In order to update or upgrade to the latest mediawiki, you'll need to re-pull
 and re-push.
 
-1) Pull from upstream:
+1. Pull from upstream:
+    ```
     $ cd mediawiki/
     $ git pull -s recursive -X theirs upstream master
-2) Push the new changes upstream
+    ```
+2. Push the new changes upstream
+    ```
     $ git push
+    ```
 
 
 
 Repo layout
 ===========
 php/ - Externally exposed php code goes here
+
 libs/ - Additional libraries
+
 misc/ - For not-externally exposed php code
+
 ../data - For persistent data
+
 .openshift/pear.txt - list of pears to install
+
 .openshift/action_hooks/build - Script that gets run every push, just prior to
     starting your app
 
