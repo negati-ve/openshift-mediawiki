@@ -35,7 +35,7 @@ Plugins:
 1. Scribunto (with standalone lua, enables you to do in wiki scripting and use popular features like infobox)
 2. mobile frontend ,
 3. google analytics (edit LocalSettings.php to set your google analytics account. edit line 165.)
-
+Google analytics extension repo/code can be found here -> https://github.com/negati-ve/mediawiki-google-analytics-extension 
 * uploads moved to data directory.
 ** Uploads are now persistent. 
 Quickstart
