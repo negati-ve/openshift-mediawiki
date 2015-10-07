@@ -159,6 +159,11 @@ wfLoadExtension( 'WikiEditor' );
 # End of automatically generated settings.
 # Add more configuration options below.
 
+##Clients real ip address
+##known issue : multiple ips if you are behind cloudflare or similar. will fix soon. 
+require_once "$IP/extensions/OpenshiftMediawikiIpFix/OpenshiftMediawikiIpFix.php";
+##
+
 #analytics
 require_once "$IP/extensions/googleAnalytics/googleAnalytics.php";
 // Replace xxxxxxx-x with YOUR GoogleAnalytics UA number

@@ -28,6 +28,13 @@ Google Analytics.
 
 Whats new
 ==========
+8/10/2015
+Openshift uses HAProxy for loadbalancing in front of the servers .
+This causes mediawiki to show the same internal proxy ip for all users.
+I've written a small plugin to fix this. 
+Can be found under /extensions/OpenshiftMediawikiIpFix 
+
+
 30/09/2015
 
 Plugins: 
